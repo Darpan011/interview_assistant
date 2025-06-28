@@ -22,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
+        suppressHydrationWarning
         className={`${monaSans.className} antialiased pattern`}>
         {children}
 
