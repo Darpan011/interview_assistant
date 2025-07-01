@@ -22,7 +22,7 @@ interface SavedMessage{
   content: string;
 }
 
-const Agent = ({userName, userId, type, questions }: AgentProps) => {
+const Agent = ({userName, userId, type, questions, interviewId }: AgentProps) => {
   const router = useRouter();
   const [isSpeaking, setisSpeaking] = useState(false);
   const [callStatus, setcallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
@@ -63,7 +63,31 @@ const Agent = ({userName, userId, type, questions }: AgentProps) => {
       }
   }, []);
 
+  const handleGenerateFeedback = async (messages: SavedMessage[]) => {
+    console.log('Generate feedback here.');
+    const { success, id } = {
+      success: true,
+      id: 'feedback-id'
+    }
+
+    //TODO: Create a server action that generates feedback
+    if(success && id){
+      router.push('/interview/${interviewId}/feedback');
+    }
+    else{
+      console.log('Error saving feedback');
+      router.push('/');
+    }
+  }  
   useEffect(() => {
+    if(callStatus === CallStatus.FINISHED){
+      if(type === 'generate'){
+        router.push('/');
+      }
+      else{
+        handleGenerateFeedback(messages);
+      }
+    }
     if(callStatus === CallStatus.FINISHED) router.push('/');
   }, [messages, callStatus, type, userId]);
 
@@ -72,15 +96,12 @@ const Agent = ({userName, userId, type, questions }: AgentProps) => {
 
     if (type === "generate") {
       await vapi.start(
-        undefined,
-        undefined,
-        undefined,
         process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!,
         {
           variableValues: {
             username: userName,
             userid: userId,
-          },
+          }
         }
       );
     } else {
